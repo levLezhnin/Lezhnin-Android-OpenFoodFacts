@@ -1,4 +1,4 @@
-package com.example.openfoodfacts.core.navigation
+package ru.LezhninLev.openfoodfacts.core.navigation
 
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Favorite

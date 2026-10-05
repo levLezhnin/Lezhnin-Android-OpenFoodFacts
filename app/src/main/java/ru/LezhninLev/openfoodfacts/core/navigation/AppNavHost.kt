@@ -1,11 +1,13 @@
-package com.example.openfoodfacts.core.navigation
+package ru.LezhninLev.openfoodfacts.core.navigation
 
 import androidx.compose.runtime.Composable
 import androidx.navigation.NavHostController
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
-import com.example.openfoodfacts.feature.detail.DetailScreen
-import com.example.openfoodfacts.feature.list.ListScreen
+import androidx.navigation.navArgument
+import ru.LezhninLev.openfoodfacts.feature.detail.DetailScreen
+import ru.LezhninLev.openfoodfacts.feature.list.ListScreen
 
 /**
  * Основной NavHost приложения.
@@ -31,7 +33,7 @@ fun AppNavHost(
         // Экран деталей
         composable(
             route = Routes.DETAIL,
-            arguments = listOf(androidx.navigation.navArgument("barcode") { type = androidx.navigation.NavType.StringType })
+            arguments = listOf(navArgument("barcode") { type = NavType.StringType })
         ) { backStackEntry ->
             val barcode = backStackEntry.arguments?.getString("barcode") ?: ""
             DetailScreen(

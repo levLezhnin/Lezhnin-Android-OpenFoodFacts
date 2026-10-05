@@ -1,4 +1,4 @@
-package com.example.openfoodfacts.feature.detail
+package ru.LezhninLev.openfoodfacts.feature.detail
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -19,7 +19,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
-import com.example.openfoodfacts.core.model.Product
+import ru.LezhninLev.openfoodfacts.core.model.Product
 
 /**
  * Экран деталей продукта с идиоматичной и сложной разметкой.

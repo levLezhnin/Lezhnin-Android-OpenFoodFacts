@@ -1,4 +1,4 @@
-package com.example.openfoodfacts.core.model
+package ru.LezhninLev.openfoodfacts.core.model
 
 /**
  * Доменная модель продукта, соответствующая структуре Open Food Facts.

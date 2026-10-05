@@ -1,4 +1,4 @@
-package com.example.openfoodfacts
+package ru.LezhninLev.openfoodfacts
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -8,8 +8,8 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.navigation.compose.rememberNavController
-import com.example.openfoodfacts.core.navigation.AppNavHost
-import com.example.openfoodfacts.core.navigation.bottomNavItems
+import ru.LezhninLev.openfoodfacts.core.navigation.AppNavHost
+import ru.LezhninLev.openfoodfacts.core.navigation.bottomNavItems
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {

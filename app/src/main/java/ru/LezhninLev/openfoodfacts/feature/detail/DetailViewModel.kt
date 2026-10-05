@@ -1,9 +1,9 @@
-package com.example.openfoodfacts.feature.detail
+package ru.LezhninLev.openfoodfacts.feature.detail
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.openfoodfacts.core.data.MockProductRepository
-import com.example.openfoodfacts.core.model.Product
+import ru.LezhninLev.openfoodfacts.core.data.MockProductRepository
+import ru.LezhninLev.openfoodfacts.core.model.Product
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow

@@ -1,4 +1,4 @@
-package com.example.openfoodfacts.feature.list
+package ru.LezhninLev.openfoodfacts.feature.list
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -12,7 +12,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
-import com.example.openfoodfacts.core.model.Product
+import ru.LezhninLev.openfoodfacts.core.model.Product
 
 /**
  * Компонент карточки продукта в списке.

@@ -1,4 +1,4 @@
-package com.example.openfoodfacts.feature.list
+package ru.LezhninLev.openfoodfacts.feature.list
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn

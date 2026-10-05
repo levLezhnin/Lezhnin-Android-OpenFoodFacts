@@ -14,9 +14,6 @@ import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import ru.LezhninLev.openfoodfacts.core.model.Product
 
-/**
- * Компонент карточки продукта в списке.
- */
 @Composable
 fun ProductListItem(
     product: Product,
@@ -77,6 +74,3 @@ fun ProductListItem(
         }
     }
 }
-
-//private fun Modifier.clip(shape: androidx.compose.ui.graphics.Shape): Modifier =
-//    this.then(clip(shape))

@@ -9,10 +9,6 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
-/**
- * ViewModel для экрана списка продуктов.
- * Реализует логику пагинации (Вариант А).
- */
 class ListViewModel : ViewModel() {
 
     private val _products = MutableStateFlow<List<Product>>(emptyList())
@@ -31,9 +27,6 @@ class ListViewModel : ViewModel() {
         loadNextPage()
     }
 
-    /**
-     * Загрузка следующей страницы данных.
-     */
     fun loadNextPage() {
         if (_isLoading.value || !_hasMore.value) return
 
@@ -44,7 +37,7 @@ class ListViewModel : ViewModel() {
             if (newProducts.isEmpty()) {
                 _hasMore.value = false
             } else {
-                _products.value = _products.value + newProducts
+                _products.value += newProducts
                 currentPage++
             }
             _isLoading.value = false

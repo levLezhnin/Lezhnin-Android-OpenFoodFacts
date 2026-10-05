@@ -9,9 +9,6 @@ import androidx.navigation.navArgument
 import ru.LezhninLev.openfoodfacts.feature.detail.DetailScreen
 import ru.LezhninLev.openfoodfacts.feature.list.ListScreen
 
-/**
- * Основной NavHost приложения.
- */
 @Composable
 fun AppNavHost(
     navController: NavHostController,
@@ -21,7 +18,6 @@ fun AppNavHost(
         navController = navController,
         startDestination = startDestination
     ) {
-        // Экран списка
         composable(Routes.LIST) {
             ListScreen(
                 onProductClick = { barcode ->
@@ -30,7 +26,6 @@ fun AppNavHost(
             )
         }
 
-        // Экран деталей
         composable(
             route = Routes.DETAIL,
             arguments = listOf(navArgument("barcode") { type = NavType.StringType })
@@ -42,12 +37,7 @@ fun AppNavHost(
             )
         }
 
-        // Заглушки для остальных табов
-        composable(Routes.SEARCH) {
-            // Placeholder
-        }
-        composable(Routes.FAVORITES) {
-            // Placeholder
-        }
+        composable(Routes.SEARCH) {}
+        composable(Routes.FAVORITES) {}
     }
 }

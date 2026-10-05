@@ -3,14 +3,9 @@ package ru.LezhninLev.openfoodfacts.core.data
 import ru.LezhninLev.openfoodfacts.core.model.Product
 import kotlinx.coroutines.delay
 
-/**
- * Репозиторий, предоставляющий разнообразные моковые данные для имитации работы с API Open Food Facts.
- * Теперь включает разные категории продуктов: Кофе, Молочные продукты, Фрукты, Снеки.
- */
 object MockProductRepository {
 
     private val allProducts = listOf(
-        // --- COFFEE ---
         Product(
             "1",
             "Espresso Roast",
@@ -27,8 +22,6 @@ object MockProductRepository {
             "https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?w=500", // +
             listOf("Light Roast", "Breakfast")
         ),
-
-        // --- DAIRY ---
         Product(
             "3",
             "Organic Whole Milk",
@@ -53,8 +46,6 @@ object MockProductRepository {
             "https://images.unsplash.com/photo-1683314573422-649a3c6ad784?w=500", // +
             listOf("Cheese", "Dairy")
         ),
-
-        // --- FRUITS & VEGGIES ---
         Product(
             "6",
             "Red Gala Apples",
@@ -79,8 +70,6 @@ object MockProductRepository {
             "https://images.unsplash.com/photo-1612506266679-606568a33215?w=500", // +
             listOf("Vegetable", "Healthy")
         ),
-
-        // --- SNACKS ---
         Product(
             "9",
             "Potato Chips Salted",
@@ -105,8 +94,6 @@ object MockProductRepository {
             "https://images.unsplash.com/photo-1633360821154-1935fb5671e6?w=500", // +
             listOf("Snack", "Healthy", "Cereal")
         ),
-
-        // --- BEVERAGES (NON-COFFEE) ---
         Product(
             "12",
             "Orange Juice Pure",
@@ -123,8 +110,6 @@ object MockProductRepository {
             "https://images.unsplash.com/photo-1553564552-02656d6a2390?w=500", // +
             listOf("Beverage", "Water")
         ),
-
-        // --- ADDITIONAL SAMPLES TO FILL PAGES ---
         Product(
             "14",
             "Honey Jar",
@@ -183,22 +168,16 @@ object MockProductRepository {
         ),
     )
 
-    /**
-     * Имитирует сетевой запрос списка продуктов с пагинацией.
-     */
     suspend fun getProducts(page: Int, pageSize: Int = 10): List<Product> {
-        delay(1000) // Имитация задержки сети
+        delay(1000)
         val start = (page - 1) * pageSize
         if (start >= allProducts.size) return emptyList()
         val end = minOf(start + pageSize, allProducts.size)
         return allProducts.subList(start, end)
     }
 
-    /**
-     * Имитирует сетевой запрос деталей продукта по его коду (barcode).
-     */
     suspend fun getProductDetails(code: String): Product? {
-        delay(800) // Имитация задержки сети
+        delay(800)
         return allProducts.find { it.code == code }
     }
 }

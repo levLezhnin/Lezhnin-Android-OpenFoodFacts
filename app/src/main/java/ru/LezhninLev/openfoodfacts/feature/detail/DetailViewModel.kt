@@ -9,9 +9,6 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
-/**
- * ViewModel для экрана деталей продукта.
- */
 class DetailViewModel : ViewModel() {
 
     private val _product = MutableStateFlow<Product?>(null)
@@ -23,11 +20,8 @@ class DetailViewModel : ViewModel() {
     private val _error = MutableStateFlow<String?>(null)
     val error: StateFlow<String?> = _error.asStateFlow()
 
-    /**
-     * Загрузка деталей продукта по его коду.
-     */
     fun loadProduct(barcode: String) {
-        if (_product.value != null) return // Уже загружено
+        if (_product.value != null) return
 
         viewModelScope.launch {
             _isLoading.value = true

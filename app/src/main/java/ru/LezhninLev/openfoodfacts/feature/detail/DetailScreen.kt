@@ -8,6 +8,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.*
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -21,9 +22,6 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
 import ru.LezhninLev.openfoodfacts.core.model.Product
 
-/**
- * Экран деталей продукта с идиоматичной и сложной разметкой.
- */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DetailScreen(
@@ -71,7 +69,7 @@ fun DetailScreen(
                     ProductDetailContent(product = product!!)
                 }
                 else -> {
-                    // Should not happen if loading/error are handled
+                    // Не должно произойти
                 }
             }
         }
@@ -87,7 +85,6 @@ private fun ProductDetailContent(product: Product) {
             .fillMaxSize()
             .verticalScroll(scrollState)
     ) {
-        // Header Image Section with Gradient Overlay
         Box(
             modifier = Modifier
                 .fillMaxWidth()
@@ -100,7 +97,6 @@ private fun ProductDetailContent(product: Product) {
                 contentScale = ContentScale.Crop
             )
 
-            // Gradient overlay for text readability
             Box(
                 modifier = Modifier
                     .fillMaxSize()
@@ -129,7 +125,6 @@ private fun ProductDetailContent(product: Product) {
                 .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            // Info Row: Brand and Nutri-Score
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
@@ -153,9 +148,8 @@ private fun ProductDetailContent(product: Product) {
                 }
             }
 
-            Divider()
+            HorizontalDivider(Modifier, DividerDefaults.Thickness, DividerDefaults.color)
 
-            // Categories/Tags Section
             Column {
                 Text(
                     text = "Categories",
@@ -164,8 +158,6 @@ private fun ProductDetailContent(product: Product) {
                 )
                 Spacer(modifier = Modifier.height(8.dp))
 
-                // Using a simple Row with wrapping-like behavior for tags
-                // In a real app, we'd use FlowRow from Compose Foundation
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
@@ -179,7 +171,6 @@ private fun ProductDetailContent(product: Product) {
                 }
             }
 
-            // Extra Info Card (Dummy data for complexity)
             Card(
                 modifier = Modifier.fillMaxWidth(),
                 colors = CardDefaults.cardColors(
@@ -210,11 +201,11 @@ private fun ProductDetailContent(product: Product) {
 @Composable
 private fun NutriScoreBadge(grade: String) {
     val color = when (grade.uppercase()) {
-        "A" -> Color(0xFF008B4C) // Green
-        "B" -> Color(0xFFF9C80E) // Yellow
-        "C" -> Color(0xFFFFA500) // Orange
-        "D" -> Color(0xFFE45824) // Dark Orange
-        "E" -> Color(0xFFED1C24) // Red
+        "A" -> Color(0xFF008B4C)
+        "B" -> Color(0xFFF9C80E)
+        "C" -> Color(0xFFFFA500)
+        "D" -> Color(0xFFE45824)
+        "E" -> Color(0xFFED1C24)
         else -> Color.Gray
     }
 

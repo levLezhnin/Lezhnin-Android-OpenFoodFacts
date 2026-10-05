@@ -11,9 +11,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 
-/**
- * Основной экран списка продуктов.
- */
 @Composable
 fun ListScreen(
     onProductClick: (String) -> Unit,
@@ -25,7 +22,6 @@ fun ListScreen(
 
     val listState = rememberLazyListState()
 
-    // Простейшая реализация пагинации при скролле к концу списка
     val shouldLoadMore = remember {
         derivedStateOf {
             val lastVisibleItem = listState.layoutInfo.visibleItemsInfo.lastOrNull()

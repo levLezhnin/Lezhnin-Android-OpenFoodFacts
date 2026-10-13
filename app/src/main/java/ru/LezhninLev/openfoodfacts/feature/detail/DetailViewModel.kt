@@ -2,14 +2,16 @@ package ru.LezhninLev.openfoodfacts.feature.detail
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import ru.LezhninLev.openfoodfacts.core.data.MockProductRepository
+import ru.LezhninLev.openfoodfacts.core.domain.usecase.GetProductDetailsUseCase
 import ru.LezhninLev.openfoodfacts.core.model.Product
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
-class DetailViewModel : ViewModel() {
+class DetailViewModel(
+    private val getProductDetailsUseCase: GetProductDetailsUseCase
+) : ViewModel() {
 
     private val _product = MutableStateFlow<Product?>(null)
     val product: StateFlow<Product?> = _product.asStateFlow()
@@ -26,13 +28,18 @@ class DetailViewModel : ViewModel() {
         viewModelScope.launch {
             _isLoading.value = true
             _error.value = null
-            val result = MockProductRepository.getProductDetails(barcode)
-            if (result != null) {
-                _product.value = result
-            } else {
-                _error.value = "Product not found"
+            try {
+                val result = getProductDetailsUseCase(barcode)
+                if (result != null) {
+                    _product.value = result
+                } else {
+                    _error.value = "Product not found"
+                }
+            } catch (e: Exception) {
+                _error.value = "An error occurred: ${e.localizedMessage}"
+            } finally {
+                _isLoading.value = false
             }
-            _isLoading.value = false
         }
     }
 }

@@ -2,14 +2,16 @@ package ru.LezhninLev.openfoodfacts.feature.list
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import ru.LezhninLev.openfoodfacts.core.data.MockProductRepository
+import ru.LezhninLev.openfoodfacts.core.domain.usecase.GetProductsUseCase
 import ru.LezhninLev.openfoodfacts.core.model.Product
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
-class ListViewModel : ViewModel() {
+class ListViewModel(
+    private val getProductsUseCase: GetProductsUseCase
+) : ViewModel() {
 
     private val _products = MutableStateFlow<List<Product>>(emptyList())
     val products: StateFlow<List<Product>> = _products.asStateFlow()
@@ -20,8 +22,11 @@ class ListViewModel : ViewModel() {
     private val _hasMore = MutableStateFlow(true)
     val hasMore: StateFlow<Boolean> = _hasMore.asStateFlow()
 
+    private val _error = MutableStateFlow<String?>(null)
+    val error: StateFlow<String?> = _error.asStateFlow()
+
     private var currentPage = 1
-    private val pageSize = 10
+    private val pageSize = 20
 
     init {
         loadNextPage()
@@ -32,15 +37,32 @@ class ListViewModel : ViewModel() {
 
         viewModelScope.launch {
             _isLoading.value = true
-            val newProducts = MockProductRepository.getProducts(currentPage, pageSize)
+            _error.value = null
+            try {
+                getProductsUseCase(currentPage, pageSize).collect { newProducts ->
+                    if (newProducts.isEmpty()) {
+                        _hasMore.value = false
+                    } else {
+                        val currentList = _products.value
+                        val existingCodes = currentList.map { it.code }.toSet()
+                        val uniqueNewProducts = newProducts.filter { it.code !in existingCodes }
 
-            if (newProducts.isEmpty()) {
-                _hasMore.value = false
-            } else {
-                _products.value += newProducts
-                currentPage++
+                        if (uniqueNewProducts.isNotEmpty()) {
+                            _products.value += uniqueNewProducts
+                            if (newProducts.size < pageSize) {
+                                _hasMore.value = false
+                            } else {
+                                currentPage++
+                            }
+                        }
+                    }
+                }
+            } catch (e: Exception) {
+                _error.value = "Ошибка загрузки: ${e.localizedMessage}"
+                // hasMore остаётся true, чтобы можно было повторить запрос
+            } finally {
+                _isLoading.value = false
             }
-            _isLoading.value = false
         }
     }
 }

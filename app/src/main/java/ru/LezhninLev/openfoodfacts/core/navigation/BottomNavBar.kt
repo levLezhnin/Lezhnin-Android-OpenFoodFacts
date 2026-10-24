@@ -1,6 +1,7 @@
 package ru.LezhninLev.openfoodfacts.core.navigation
 
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.List
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.List
 import androidx.compose.material.icons.filled.Search
@@ -13,7 +14,7 @@ data class BottomNavItem(
 )
 
 val bottomNavItems = listOf(
-    BottomNavItem(Routes.LIST, "Products", Icons.Default.List),
+    BottomNavItem(Routes.LIST, "Products", Icons.AutoMirrored.Filled.List),
     BottomNavItem(Routes.SEARCH, "Search", Icons.Default.Search),
     BottomNavItem(Routes.FAVORITES, "Favorites", Icons.Default.Favorite)
 )

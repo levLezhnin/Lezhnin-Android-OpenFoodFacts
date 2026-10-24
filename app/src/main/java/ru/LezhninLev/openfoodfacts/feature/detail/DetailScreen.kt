@@ -6,7 +6,10 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.outlined.FavoriteBorder
 import androidx.compose.material3.*
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.runtime.*
@@ -32,6 +35,7 @@ fun DetailScreen(
     val product by viewModel.product.collectAsState()
     val isLoading by viewModel.isLoading.collectAsState()
     val error by viewModel.error.collectAsState()
+    val isFavorite by viewModel.isFavorite.collectAsState()
 
     LaunchedEffect(barcode) {
         viewModel.loadProduct(barcode)
@@ -40,10 +44,24 @@ fun DetailScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Product Details") },
+                title = { Text("О продукте") },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Back")
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Назад")
+                    }
+                },
+                actions = {
+                    if (product != null) {
+                        IconButton(onClick = { viewModel.toggleFavorite() }) {
+                            Icon(
+                                imageVector = if (isFavorite) Icons.Filled.Favorite
+                                else Icons.Outlined.FavoriteBorder,
+                                contentDescription = if (isFavorite)
+                                    "Убрать из избранного" else "В избранное",
+                                tint = if (isFavorite) MaterialTheme.colorScheme.error
+                                else LocalContentColor.current
+                            )
+                        }
                     }
                 }
             )
@@ -55,22 +73,13 @@ fun DetailScreen(
                 .padding(paddingValues)
         ) {
             when {
-                isLoading -> {
-                    CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
-                }
-                error != null -> {
-                    Text(
-                        text = error ?: "Unknown error",
-                        modifier = Modifier.align(Alignment.Center),
-                        color = MaterialTheme.colorScheme.error
-                    )
-                }
-                product != null -> {
-                    ProductDetailContent(product = product!!)
-                }
-                else -> {
-                    // Не должно произойти
-                }
+                isLoading -> CircularProgressIndicator(Modifier.align(Alignment.Center))
+                error != null -> Text(
+                    text = error ?: "Ошибка",
+                    modifier = Modifier.align(Alignment.Center),
+                    color = MaterialTheme.colorScheme.error
+                )
+                product != null -> ProductDetailContent(product = product!!)
             }
         }
     }
@@ -96,7 +105,6 @@ private fun ProductDetailContent(product: Product) {
                 modifier = Modifier.fillMaxSize(),
                 contentScale = ContentScale.Crop
             )
-
             Box(
                 modifier = Modifier
                     .fillMaxSize()
@@ -107,7 +115,6 @@ private fun ProductDetailContent(product: Product) {
                         )
                     )
             )
-
             Text(
                 text = product.productName,
                 color = Color.White,
@@ -131,7 +138,7 @@ private fun ProductDetailContent(product: Product) {
             ) {
                 Column {
                     Text(
-                        text = "Brand",
+                        text = "Бренд",
                         style = MaterialTheme.typography.labelMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -141,22 +148,18 @@ private fun ProductDetailContent(product: Product) {
                         fontWeight = FontWeight.SemiBold
                     )
                 }
-
-                product.nutriscoreGrade?.let { grade ->
-                    NutriScoreBadge(grade = grade)
-                }
+                product.nutriscoreGrade?.let { NutriScoreBadge(grade = it) }
             }
 
             HorizontalDivider(Modifier, DividerDefaults.Thickness, DividerDefaults.color)
 
             Column {
                 Text(
-                    text = "Categories",
+                    text = "Категории",
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold
                 )
                 Spacer(modifier = Modifier.height(8.dp))
-
                 FlowRow(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
@@ -178,17 +181,17 @@ private fun ProductDetailContent(product: Product) {
             ) {
                 Column(modifier = Modifier.padding(16.dp)) {
                     Text(
-                        text = "Product Information",
+                        text = "Информация о продукте",
                         style = MaterialTheme.typography.titleSmall,
                         fontWeight = FontWeight.Bold
                     )
                     Spacer(modifier = Modifier.height(8.dp))
                     Text(
-                        text = "Barcode: ${product.code}",
+                        text = "Штрихкод: ${product.code}",
                         style = MaterialTheme.typography.bodyMedium
                     )
                     Text(
-                        text = "Status: Available in stores",
+                        text = "Статус: доступен в магазинах",
                         style = MaterialTheme.typography.bodySmall
                     )
                 }
@@ -207,11 +210,7 @@ private fun NutriScoreBadge(grade: String) {
         "E" -> Color(0xFFED1C24)
         else -> Color.Gray
     }
-
-    Surface(
-        color = color,
-        shape = RoundedCornerShape(8.dp)
-    ) {
+    Surface(color = color, shape = RoundedCornerShape(8.dp)) {
         Text(
             text = "Nutri-Score $grade",
             color = Color.White,

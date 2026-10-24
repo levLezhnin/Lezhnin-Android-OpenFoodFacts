@@ -2,15 +2,20 @@ package ru.LezhninLev.openfoodfacts.feature.list
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import ru.LezhninLev.openfoodfacts.core.domain.usecase.GetProductsUseCase
-import ru.LezhninLev.openfoodfacts.core.model.Product
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import ru.LezhninLev.openfoodfacts.core.data.datastore.FilterPreferences
+import ru.LezhninLev.openfoodfacts.core.domain.usecase.GetProductsUseCase
+import ru.LezhninLev.openfoodfacts.core.model.Product
+import ru.LezhninLev.openfoodfacts.core.model.SearchFilters
 
 class ListViewModel(
-    private val getProductsUseCase: GetProductsUseCase
+    private val getProductsUseCase: GetProductsUseCase,
+    private val filterPreferences: FilterPreferences
 ) : ViewModel() {
 
     private val _products = MutableStateFlow<List<Product>>(emptyList())
@@ -28,40 +33,64 @@ class ListViewModel(
     private var currentPage = 1
     private val pageSize = 20
 
+    private var currentFilters = SearchFilters()
+    private var loadJob: Job? = null
+    private var loadGeneration = 0
+
     init {
+        viewModelScope.launch {
+            filterPreferences.filtersFlow.collect { filters ->
+                currentFilters = filters
+                reload()
+            }
+        }
+    }
+
+    private fun reload() {
+        loadJob?.cancel()
+        loadGeneration++
+        _isLoading.value = false
+        _products.value = emptyList()
+        _hasMore.value = true
+        _error.value = null
+        currentPage = 1
         loadNextPage()
     }
 
     fun loadNextPage() {
         if (_isLoading.value || !_hasMore.value) return
-
-        viewModelScope.launch {
+        val gen = ++loadGeneration
+        loadJob = viewModelScope.launch {
             _isLoading.value = true
             _error.value = null
             try {
-                getProductsUseCase(currentPage, pageSize).collect { newProducts ->
+                getProductsUseCase(currentPage, pageSize, currentFilters).collect { newProducts ->
+                    if (gen != loadGeneration) return@collect
                     if (newProducts.isEmpty()) {
                         _hasMore.value = false
                     } else {
-                        val currentList = _products.value
-                        val existingCodes = currentList.map { it.code }.toSet()
-                        val uniqueNewProducts = newProducts.filter { it.code !in existingCodes }
-
-                        if (uniqueNewProducts.isNotEmpty()) {
-                            _products.value += uniqueNewProducts
+                        val existingCodes = _products.value.map { it.code }.toSet()
+                        val unique = newProducts.filter { it.code !in existingCodes }
+                        if (unique.isNotEmpty()) {
+                            _products.value += unique
                             if (newProducts.size < pageSize) {
                                 _hasMore.value = false
                             } else {
                                 currentPage++
                             }
+                        } else {
+                            _hasMore.value = false
                         }
                     }
                 }
+            } catch (e: CancellationException) {
+                throw e
             } catch (e: Exception) {
-                _error.value = "Ошибка загрузки: ${e.localizedMessage}"
-                // hasMore остаётся true, чтобы можно было повторить запрос
+                if (gen == loadGeneration) {
+                    _error.value = "Ошибка загрузки: ${e.localizedMessage}"
+                }
             } finally {
-                _isLoading.value = false
+                if (gen == loadGeneration) _isLoading.value = false
             }
         }
     }

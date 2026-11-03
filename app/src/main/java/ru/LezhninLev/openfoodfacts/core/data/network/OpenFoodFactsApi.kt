@@ -11,6 +11,8 @@ interface OpenFoodFactsApi {
     @GET("api/v2/search")
     suspend fun searchProducts(
         @Query("categories_tags_en") category: String?,
+        @Query("brands_tags") brand: String?,
+        @Query("nutrition_grades_tags") grade: String?,
         @Query("page_size") pageSize: Int,
         @Query("page") page: Int,
         @Query("fields") fields: String = "code,product_name,brands,image_url,nutriscore_grade,categories_tags"

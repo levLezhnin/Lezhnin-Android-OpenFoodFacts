@@ -12,6 +12,10 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import ru.LezhninLev.openfoodfacts.core.di.LocalAppContainer
 import ru.LezhninLev.openfoodfacts.feature.detail.DetailScreen
 import ru.LezhninLev.openfoodfacts.feature.detail.DetailViewModel
+import ru.LezhninLev.openfoodfacts.feature.favorites.FavoritesScreen
+import ru.LezhninLev.openfoodfacts.feature.favorites.FavoritesViewModel
+import ru.LezhninLev.openfoodfacts.feature.filter.FilterScreen
+import ru.LezhninLev.openfoodfacts.feature.filter.FilterViewModel
 import ru.LezhninLev.openfoodfacts.feature.list.ListScreen
 import ru.LezhninLev.openfoodfacts.feature.list.ListViewModel
 
@@ -30,7 +34,11 @@ fun AppNavHost(
             val viewModel: ListViewModel = viewModel(
                 factory = object : ViewModelProvider.Factory {
                     override fun <T : ViewModel> create(modelClass: Class<T>): T {
-                        return ListViewModel(appContainer.getProductsUseCase) as T
+                        return ListViewModel(
+                            appContainer.getProductsUseCase,
+                            appContainer.observeFiltersUseCase,
+                            appContainer.filterBadgeCache
+                        ) as T
                     }
                 }
             )
@@ -38,6 +46,7 @@ fun AppNavHost(
                 onProductClick = { barcode ->
                     navController.navigate(Routes.detail(barcode))
                 },
+                onOpenFilters = { navController.navigate(Routes.SEARCH) },
                 viewModel = viewModel
             )
         }
@@ -50,7 +59,12 @@ fun AppNavHost(
             val viewModel: DetailViewModel = viewModel(
                 factory = object : ViewModelProvider.Factory {
                     override fun <T : ViewModel> create(modelClass: Class<T>): T {
-                        return DetailViewModel(appContainer.getProductDetailsUseCase) as T
+                        return DetailViewModel(
+                            appContainer.getProductDetailsUseCase,
+                            appContainer.isFavoriteUseCase,
+                            appContainer.toggleFavoriteUseCase,
+                            appContainer.getFavoriteByCodeUseCase
+                        ) as T
                     }
                 }
             )
@@ -61,7 +75,36 @@ fun AppNavHost(
             )
         }
 
-        composable(Routes.SEARCH) {}
-        composable(Routes.FAVORITES) {}
+        composable(Routes.SEARCH) {
+            val viewModel: FilterViewModel = viewModel(
+                factory = object : ViewModelProvider.Factory {
+                    override fun <T : ViewModel> create(modelClass: Class<T>): T {
+                        return FilterViewModel(
+                            appContainer.observeFiltersUseCase,
+                            appContainer.saveFiltersUseCase,
+                            appContainer.getCategoriesUseCase
+                        ) as T
+                    }
+                }
+            )
+            FilterScreen(
+                viewModel = viewModel,
+                onClose = { navController.popBackStack() }
+            )
+        }
+
+        composable(Routes.FAVORITES) {
+            val viewModel: FavoritesViewModel = viewModel(
+                factory = object : ViewModelProvider.Factory {
+                    override fun <T : ViewModel> create(modelClass: Class<T>): T {
+                        return FavoritesViewModel(appContainer.getFavoritesUseCase) as T
+                    }
+                }
+            )
+            FavoritesScreen(
+                onProductClick = { barcode -> navController.navigate(Routes.detail(barcode)) },
+                viewModel = viewModel
+            )
+        }
     }
 }

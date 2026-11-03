@@ -8,12 +8,15 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import ru.LezhninLev.openfoodfacts.core.data.datastore.FilterPreferences
+import ru.LezhninLev.openfoodfacts.core.error.createCoroutineExceptionHandler
 import ru.LezhninLev.openfoodfacts.core.domain.usecase.GetCategoriesUseCase
+import ru.LezhninLev.openfoodfacts.core.domain.usecase.ObserveFiltersUseCase
+import ru.LezhninLev.openfoodfacts.core.domain.usecase.SaveFiltersUseCase
 import ru.LezhninLev.openfoodfacts.core.model.SearchFilters
 
 class FilterViewModel(
-    private val filterPreferences: FilterPreferences,
+    private val observeFiltersUseCase: ObserveFiltersUseCase,
+    private val saveFiltersUseCase: SaveFiltersUseCase,
     private val getCategoriesUseCase: GetCategoriesUseCase
 ) : ViewModel() {
 
@@ -23,15 +26,18 @@ class FilterViewModel(
         val grade: String = "",
         val availableCategories: List<String> = emptyList(),
         val categoriesLoading: Boolean = false,
-        val categoriesError: String? = null
+        val categoriesError: String? = null,
+        val error: String? = null
     )
 
     private val _state = MutableStateFlow(UiState())
     val state: StateFlow<UiState> = _state.asStateFlow()
 
     init {
-        viewModelScope.launch {
-            val saved = filterPreferences.filtersFlow.first()
+        viewModelScope.launch(createCoroutineExceptionHandler { exception ->
+            _state.update { it.copy(error = "Не удалось загрузить фильтры: ${exception.localizedMessage}") }
+        }) {
+            val saved = observeFiltersUseCase().first()
             _state.update {
                 it.copy(
                     category = saved.category.orEmpty(),
@@ -48,9 +54,12 @@ class FilterViewModel(
     fun onGradeChange(value: String) = _state.update { it.copy(grade = value) }
 
     fun apply(onDone: () -> Unit) {
-        viewModelScope.launch {
+        viewModelScope.launch(createCoroutineExceptionHandler { exception ->
+            _state.update { it.copy(error = "Не удалось сохранить фильтры: ${exception.localizedMessage}") }
+        }) {
             val s = _state.value
-            filterPreferences.save(
+            _state.update { it.copy(error = null) }
+            saveFiltersUseCase(
                 SearchFilters(
                     category = s.category.ifBlank { null },
                     brand = s.brand.ifBlank { null },
@@ -62,8 +71,11 @@ class FilterViewModel(
     }
 
     fun reset(onDone: () -> Unit) {
-        viewModelScope.launch {
-            filterPreferences.save(SearchFilters())
+        viewModelScope.launch(createCoroutineExceptionHandler { exception ->
+            _state.update { it.copy(error = "Не удалось сбросить фильтры: ${exception.localizedMessage}") }
+        }) {
+            saveFiltersUseCase(SearchFilters())
+            _state.update { it.copy(category = "", brand = "", grade = "", error = null) }
             onDone()
         }
     }
@@ -71,18 +83,17 @@ class FilterViewModel(
     fun retryCategories() = loadCategories()
 
     private fun loadCategories() {
-        viewModelScope.launch {
+        viewModelScope.launch(createCoroutineExceptionHandler { exception ->
+            _state.update {
+                it.copy(categoriesError = "Не удалось загрузить категории: ${exception.localizedMessage}")
+            }
+        }) {
             _state.update { it.copy(categoriesLoading = true, categoriesError = null) }
             try {
                 val cats = getCategoriesUseCase()
                 _state.update { it.copy(availableCategories = cats, categoriesLoading = false) }
-            } catch (e: Exception) {
-                _state.update {
-                    it.copy(
-                        categoriesError = "Не удалось загрузить категории: ${e.localizedMessage}",
-                        categoriesLoading = false
-                    )
-                }
+            } finally {
+                _state.update { it.copy(categoriesLoading = false) }
             }
         }
     }

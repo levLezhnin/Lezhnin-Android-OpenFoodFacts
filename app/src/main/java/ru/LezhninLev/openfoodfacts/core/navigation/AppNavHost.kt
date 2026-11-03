@@ -36,7 +36,8 @@ fun AppNavHost(
                     override fun <T : ViewModel> create(modelClass: Class<T>): T {
                         return ListViewModel(
                             appContainer.getProductsUseCase,
-                            appContainer.filterPreferences
+                            appContainer.observeFiltersUseCase,
+                            appContainer.filterBadgeCache
                         ) as T
                     }
                 }
@@ -46,7 +47,6 @@ fun AppNavHost(
                     navController.navigate(Routes.detail(barcode))
                 },
                 onOpenFilters = { navController.navigate(Routes.SEARCH) },
-                filterBadgeCache = appContainer.filterBadgeCache,
                 viewModel = viewModel
             )
         }
@@ -80,7 +80,8 @@ fun AppNavHost(
                 factory = object : ViewModelProvider.Factory {
                     override fun <T : ViewModel> create(modelClass: Class<T>): T {
                         return FilterViewModel(
-                            appContainer.filterPreferences,
+                            appContainer.observeFiltersUseCase,
+                            appContainer.saveFiltersUseCase,
                             appContainer.getCategoriesUseCase
                         ) as T
                     }

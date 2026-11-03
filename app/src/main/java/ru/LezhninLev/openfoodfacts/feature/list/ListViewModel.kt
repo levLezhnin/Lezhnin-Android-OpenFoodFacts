@@ -2,20 +2,22 @@ package ru.LezhninLev.openfoodfacts.feature.list
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
-import ru.LezhninLev.openfoodfacts.core.data.datastore.FilterPreferences
+import ru.LezhninLev.openfoodfacts.core.cache.FilterBadgeCache
+import ru.LezhninLev.openfoodfacts.core.domain.usecase.ObserveFiltersUseCase
 import ru.LezhninLev.openfoodfacts.core.domain.usecase.GetProductsUseCase
+import ru.LezhninLev.openfoodfacts.core.error.createCoroutineExceptionHandler
 import ru.LezhninLev.openfoodfacts.core.model.Product
 import ru.LezhninLev.openfoodfacts.core.model.SearchFilters
 
 class ListViewModel(
     private val getProductsUseCase: GetProductsUseCase,
-    private val filterPreferences: FilterPreferences
+    private val observeFiltersUseCase: ObserveFiltersUseCase,
+    filterBadgeCache: FilterBadgeCache
 ) : ViewModel() {
 
     private val _products = MutableStateFlow<List<Product>>(emptyList())
@@ -30,6 +32,9 @@ class ListViewModel(
     private val _error = MutableStateFlow<String?>(null)
     val error: StateFlow<String?> = _error.asStateFlow()
 
+    private val _showFilterBadge = MutableStateFlow(false)
+    val showFilterBadge: StateFlow<Boolean> = _showFilterBadge.asStateFlow()
+
     private var currentPage = 1
     private val pageSize = 20
 
@@ -38,11 +43,18 @@ class ListViewModel(
     private var loadGeneration = 0
 
     init {
-        viewModelScope.launch {
-            filterPreferences.filtersFlow.collect { filters ->
+        viewModelScope.launch(createCoroutineExceptionHandler { exception ->
+            _error.value = "Ошибка фильтров: ${exception.localizedMessage}"
+        }) {
+            observeFiltersUseCase().collect { filters ->
                 currentFilters = filters
                 reload()
             }
+        }
+        viewModelScope.launch(createCoroutineExceptionHandler { exception ->
+            _error.value = "Ошибка фильтров: ${exception.localizedMessage}"
+        }) {
+            filterBadgeCache.show.collect { show -> _showFilterBadge.value = show }
         }
     }
 
@@ -60,7 +72,13 @@ class ListViewModel(
     fun loadNextPage() {
         if (_isLoading.value || !_hasMore.value) return
         val gen = ++loadGeneration
-        loadJob = viewModelScope.launch {
+        loadJob = viewModelScope.launch(
+            createCoroutineExceptionHandler { exception ->
+                if (gen == loadGeneration) {
+                    _error.value = "Ошибка загрузки: ${exception.localizedMessage}"
+                }
+            }
+        ) {
             _isLoading.value = true
             _error.value = null
             try {
@@ -82,12 +100,6 @@ class ListViewModel(
                             _hasMore.value = false
                         }
                     }
-                }
-            } catch (e: CancellationException) {
-                throw e
-            } catch (e: Exception) {
-                if (gen == loadGeneration) {
-                    _error.value = "Ошибка загрузки: ${e.localizedMessage}"
                 }
             } finally {
                 if (gen == loadGeneration) _isLoading.value = false

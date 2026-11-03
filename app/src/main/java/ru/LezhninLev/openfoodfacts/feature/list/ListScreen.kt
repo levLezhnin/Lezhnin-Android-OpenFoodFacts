@@ -12,21 +12,19 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import ru.LezhninLev.openfoodfacts.core.cache.FilterBadgeCache
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ListScreen(
     onProductClick: (String) -> Unit,
     onOpenFilters: () -> Unit,
-    filterBadgeCache: FilterBadgeCache,
     viewModel: ListViewModel = viewModel()
 ) {
     val products by viewModel.products.collectAsState()
     val isLoading by viewModel.isLoading.collectAsState()
     val hasMore by viewModel.hasMore.collectAsState()
     val error by viewModel.error.collectAsState()
-    val showBadge by filterBadgeCache.show.collectAsState()
+    val showBadge by viewModel.showFilterBadge.collectAsState()
 
     val listState = rememberLazyListState()
 

@@ -26,11 +26,7 @@ class ProductRepositoryImpl(
     }
 
     override suspend fun getProductDetails(barcode: String): Product? =
-        try {
-            api.getProductDetails(barcode).product?.toDomain()
-        } catch (e: Exception) {
-            null
-        }
+        api.getProductDetails(barcode).product?.toDomain()
 
     override suspend fun getAvailableCategories(): List<String> {
         val response = api.searchProducts(

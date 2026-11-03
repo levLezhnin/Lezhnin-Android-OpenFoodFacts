@@ -7,12 +7,14 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import ru.LezhninLev.openfoodfacts.core.cache.FilterBadgeCache
 import ru.LezhninLev.openfoodfacts.core.data.datastore.FilterPreferences
+import ru.LezhninLev.openfoodfacts.core.data.datastore.FilterRepositoryImpl
 import ru.LezhninLev.openfoodfacts.core.data.datastore.AppDatabase
 import ru.LezhninLev.openfoodfacts.core.data.local.repository.FavoritesRepositoryImpl
 import ru.LezhninLev.openfoodfacts.core.data.network.NetworkModule
 import ru.LezhninLev.openfoodfacts.core.data.network.OpenFoodFactsApi
 import ru.LezhninLev.openfoodfacts.core.data.network.ProductRepositoryImpl
 import ru.LezhninLev.openfoodfacts.core.domain.repository.FavoritesRepository
+import ru.LezhninLev.openfoodfacts.core.domain.repository.FilterRepository
 import ru.LezhninLev.openfoodfacts.core.domain.repository.ProductRepository
 import ru.LezhninLev.openfoodfacts.core.domain.usecase.GetCategoriesUseCase
 import ru.LezhninLev.openfoodfacts.core.domain.usecase.GetFavoriteByCodeUseCase
@@ -20,6 +22,8 @@ import ru.LezhninLev.openfoodfacts.core.domain.usecase.GetFavoritesUseCase
 import ru.LezhninLev.openfoodfacts.core.domain.usecase.GetProductDetailsUseCase
 import ru.LezhninLev.openfoodfacts.core.domain.usecase.GetProductsUseCase
 import ru.LezhninLev.openfoodfacts.core.domain.usecase.IsFavoriteUseCase
+import ru.LezhninLev.openfoodfacts.core.domain.usecase.ObserveFiltersUseCase
+import ru.LezhninLev.openfoodfacts.core.domain.usecase.SaveFiltersUseCase
 import ru.LezhninLev.openfoodfacts.core.domain.usecase.ToggleFavoriteUseCase
 
 class AppContainer(context: Context) {
@@ -38,8 +42,11 @@ class AppContainer(context: Context) {
     private val favoritesRepository: FavoritesRepository =
         FavoritesRepositoryImpl(database.favoriteProductDao())
 
-    val filterPreferences = FilterPreferences(appContext)
-    val filterBadgeCache = FilterBadgeCache(filterPreferences, appScope)
+    private val filterPreferences = FilterPreferences(appContext)
+    private val filterRepository: FilterRepository = FilterRepositoryImpl(filterPreferences)
+    val observeFiltersUseCase = ObserveFiltersUseCase(filterRepository)
+    val saveFiltersUseCase = SaveFiltersUseCase(filterRepository)
+    val filterBadgeCache = FilterBadgeCache(observeFiltersUseCase, appScope)
 
     val getProductsUseCase = GetProductsUseCase(productRepository)
     val getProductDetailsUseCase = GetProductDetailsUseCase(productRepository)

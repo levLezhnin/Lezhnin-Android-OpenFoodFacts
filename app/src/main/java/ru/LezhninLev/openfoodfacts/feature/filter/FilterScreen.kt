@@ -79,6 +79,9 @@ fun FilterScreen(
                     TextButton(onClick = viewModel::retryCategories) { Text("Повторить") }
                 }
             }
+            state.error?.let { err ->
+                Text(err, color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodySmall)
+            }
 
             OutlinedTextField(
                 value = state.brand,

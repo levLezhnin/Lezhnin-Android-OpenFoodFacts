@@ -5,7 +5,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
-import ru.LezhninLev.openfoodfacts.core.data.datastore.FilterPreferences
+import ru.LezhninLev.openfoodfacts.core.domain.usecase.ObserveFiltersUseCase
 
 /**
  * Общий кэш для экрана списка и экрана настроек.
@@ -13,7 +13,7 @@ import ru.LezhninLev.openfoodfacts.core.data.datastore.FilterPreferences
  * Сам факт «показывали/не показывали» не персистится — пересчитывается из DataStore.
  */
 class FilterBadgeCache(
-    filterPreferences: FilterPreferences,
+    observeFiltersUseCase: ObserveFiltersUseCase,
     scope: CoroutineScope
 ) {
     private val _show = MutableStateFlow(false)
@@ -21,7 +21,7 @@ class FilterBadgeCache(
 
     init {
         scope.launch {
-            filterPreferences.filtersFlow.collect { filters ->
+            observeFiltersUseCase().collect { filters ->
                 _show.value = filters.hasActive()
             }
         }

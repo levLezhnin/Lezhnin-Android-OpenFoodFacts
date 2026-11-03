@@ -23,7 +23,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
-import ru.LezhninLev.openfoodfacts.core.model.Product
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -79,14 +78,14 @@ fun DetailScreen(
                     modifier = Modifier.align(Alignment.Center),
                     color = MaterialTheme.colorScheme.error
                 )
-                product != null -> ProductDetailContent(product = product!!)
+                product != null -> ProductDetailContent(uiModel = product!!)
             }
         }
     }
 }
-
 @Composable
-private fun ProductDetailContent(product: Product) {
+private fun ProductDetailContent(uiModel: ProductDetailUiModel) {
+    val product = uiModel.product
     val scrollState = rememberScrollState()
 
     Column(
@@ -148,7 +147,20 @@ private fun ProductDetailContent(product: Product) {
                         fontWeight = FontWeight.SemiBold
                     )
                 }
-                product.nutriscoreGrade?.let { NutriScoreBadge(grade = it) }
+                uiModel.nutriScore?.let { nutriScore ->
+                    Surface(
+                        color = Color(nutriScore.colorArgb),
+                        shape = RoundedCornerShape(8.dp)
+                    ) {
+                        Text(
+                            text = nutriScore.label,
+                            color = Color.White,
+                            modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
+                            style = MaterialTheme.typography.labelLarge,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
+                }
             }
 
             HorizontalDivider(Modifier, DividerDefaults.Thickness, DividerDefaults.color)
@@ -187,7 +199,7 @@ private fun ProductDetailContent(product: Product) {
                     )
                     Spacer(modifier = Modifier.height(8.dp))
                     Text(
-                        text = "Штрихкод: ${product.code}",
+                        text = uiModel.barcodeLabel,
                         style = MaterialTheme.typography.bodyMedium
                     )
                     Text(
@@ -197,26 +209,5 @@ private fun ProductDetailContent(product: Product) {
                 }
             }
         }
-    }
-}
-
-@Composable
-private fun NutriScoreBadge(grade: String) {
-    val color = when (grade.uppercase()) {
-        "A" -> Color(0xFF008B4C)
-        "B" -> Color(0xFFF9C80E)
-        "C" -> Color(0xFFFFA500)
-        "D" -> Color(0xFFE45824)
-        "E" -> Color(0xFFED1C24)
-        else -> Color.Gray
-    }
-    Surface(color = color, shape = RoundedCornerShape(8.dp)) {
-        Text(
-            text = "Nutri-Score $grade",
-            color = Color.White,
-            modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
-            style = MaterialTheme.typography.labelLarge,
-            fontWeight = FontWeight.Bold
-        )
     }
 }

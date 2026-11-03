@@ -1,7 +1,7 @@
-package ru.LezhninLev.openfoodfacts.core.data
+package ru.LezhninLev.openfoodfacts.core.domain.repository
 
-import ru.LezhninLev.openfoodfacts.core.model.Product
 import kotlinx.coroutines.delay
+import ru.LezhninLev.openfoodfacts.core.model.Product
 
 object MockProductRepository {
 

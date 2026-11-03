@@ -8,15 +8,23 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.navigation.compose.rememberNavController
+import ru.LezhninLev.openfoodfacts.core.di.AppContainer
+import ru.LezhninLev.openfoodfacts.core.di.LocalAppContainer
 import ru.LezhninLev.openfoodfacts.core.navigation.AppNavHost
 import ru.LezhninLev.openfoodfacts.core.navigation.bottomNavItems
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        // Initialize manual DI container
+        val appContainer = AppContainer(applicationContext)
+
         setContent {
             MaterialTheme {
-                MainScreen()
+                CompositionLocalProvider(LocalAppContainer provides appContainer) {
+                    MainScreen()
+                }
             }
         }
     }

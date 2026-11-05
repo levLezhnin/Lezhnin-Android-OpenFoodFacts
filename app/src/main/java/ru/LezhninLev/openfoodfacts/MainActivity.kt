@@ -7,6 +7,9 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.navigation.NavGraph.Companion.findStartDestination
+import androidx.navigation.NavDestination.Companion.hierarchy
+import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import ru.LezhninLev.openfoodfacts.core.di.AppContainer
 import ru.LezhninLev.openfoodfacts.core.di.LocalAppContainer
@@ -33,20 +36,20 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun MainScreen() {
     val navController = rememberNavController()
-    var selectedItem by remember { mutableStateOf(0) }
+    val navBackStackEntry by navController.currentBackStackEntryAsState()
+    val currentDestination = navBackStackEntry?.destination
 
     Scaffold(
         bottomBar = {
             NavigationBar {
-                bottomNavItems.forEachIndexed { index, item ->
+                bottomNavItems.forEach { item ->
                     NavigationBarItem(
                         icon = { Icon(item.icon, contentDescription = item.label) },
                         label = { Text(item.label) },
-                        selected = selectedItem == index,
+                        selected = currentDestination?.hierarchy?.any { it.route == item.route } == true,
                         onClick = {
-                            selectedItem = index
                             navController.navigate(item.route) {
-                                popUpTo(navController.graph.startDestinationId) {
+                                popUpTo(navController.graph.findStartDestination().id) {
                                     saveState = true
                                 }
                                 launchSingleTop = true

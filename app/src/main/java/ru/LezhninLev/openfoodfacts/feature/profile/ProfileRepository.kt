@@ -9,7 +9,8 @@ import java.util.UUID
 data class UserProfile(
     val fullName: String = "",
     val resumeUrl: String = "",
-    val avatarUri: String? = null
+    val avatarUri: String? = null,
+    val pairTime: String = ""
 )
 
 /** Small profile fields fit SharedPreferences; the image itself lives in private app files. */
@@ -21,13 +22,15 @@ class ProfileRepository(context: Context) {
     val initialProfile = UserProfile(
         fullName = preferences.getString(KEY_FULL_NAME, "").orEmpty(),
         resumeUrl = preferences.getString(KEY_RESUME_URL, "").orEmpty(),
-        avatarUri = preferences.getString(KEY_AVATAR_URI, null)
+        avatarUri = preferences.getString(KEY_AVATAR_URI, null),
+        pairTime = preferences.getString(KEY_PAIR_TIME, "").orEmpty()
     )
 
     fun saveProfile(profile: UserProfile) {
         preferences.edit()
             .putString(KEY_FULL_NAME, profile.fullName)
             .putString(KEY_RESUME_URL, profile.resumeUrl)
+            .putString(KEY_PAIR_TIME, profile.pairTime)
             .apply()
     }
 
@@ -101,5 +104,6 @@ class ProfileRepository(context: Context) {
         const val KEY_FULL_NAME = "full_name"
         const val KEY_RESUME_URL = "resume_url"
         const val KEY_AVATAR_URI = "avatar_uri"
+        const val KEY_PAIR_TIME = "pair_time"
     }
 }

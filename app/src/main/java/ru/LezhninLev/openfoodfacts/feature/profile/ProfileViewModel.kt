@@ -3,6 +3,10 @@ package ru.LezhninLev.openfoodfacts.feature.profile
 import android.app.Application
 import android.app.DownloadManager
 import android.content.Context
+import android.app.AlarmManager
+import android.app.PendingIntent
+
+import android.content.Intent
 import android.net.Uri
 import android.os.Environment
 import androidx.lifecycle.AndroidViewModel
@@ -16,6 +20,25 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.io.File
+import java.util.Calendar
+
+private fun String.toTodayMillis(): Long? {
+    val parts = split(":")
+    if (parts.size != 2) return null
+    val hour = parts[0].toIntOrNull() ?: return null
+    val minute = parts[1].toIntOrNull() ?: return null
+    if (hour !in 0..23 || minute !in 0..59) return null
+    val calendar = Calendar.getInstance().apply {
+        set(Calendar.HOUR_OF_DAY, hour)
+        set(Calendar.MINUTE, minute)
+        set(Calendar.SECOND, 0)
+        set(Calendar.MILLISECOND, 0)
+        if (timeInMillis <= System.currentTimeMillis()) {
+            add(Calendar.DAY_OF_YEAR, 1)
+        }
+    }
+    return calendar.timeInMillis
+}
 
 sealed interface ProfileEvent {
     data class OpenDocument(val uri: Uri, val mimeType: String) : ProfileEvent
@@ -33,10 +56,44 @@ class ProfileViewModel(application: Application) : AndroidViewModel(application)
     private val _events = MutableSharedFlow<ProfileEvent>(extraBufferCapacity = 1)
     val events = _events.asSharedFlow()
 
-    fun saveProfile(fullName: String, resumeUrl: String) {
-        val updated = _profile.value.copy(fullName = fullName.trim(), resumeUrl = resumeUrl.trim())
+    fun saveProfile(fullName: String, resumeUrl: String, pairTime: String) {
+        val updated = _profile.value.copy(
+            fullName = fullName.trim(),
+            resumeUrl = resumeUrl.trim(),
+            pairTime = pairTime.trim()
+        )
         repository.saveProfile(updated)
         _profile.value = updated
+        schedulePairAlarm(updated)
+    }
+
+    private fun schedulePairAlarm(profile: UserProfile) {
+        val triggerAtMillis = profile.pairTime.toTodayMillis() ?: return
+        val alarmManager = getApplication<Application>().getSystemService(Context.ALARM_SERVICE) as AlarmManager
+        val intent = Intent(getApplication(), PairAlarmReceiver::class.java).apply {
+            putExtra(EXTRA_USER_NAME, profile.fullName)
+        }
+        val pendingIntent = PendingIntent.getBroadcast(
+            getApplication(),
+            0,
+            intent,
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+        )
+        runCatching { alarmManager.cancel(pendingIntent) }
+        val canSchedule = if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.S) {
+            alarmManager.canScheduleExactAlarms()
+        } else {
+            true
+        }
+        if (canSchedule) {
+            alarmManager.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, triggerAtMillis, pendingIntent)
+        } else {
+            alarmManager.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, triggerAtMillis, pendingIntent)
+        }
+    }
+
+    companion object {
+        const val EXTRA_USER_NAME = "extra_user_name"
     }
 
     fun setAvatar(uri: Uri) {

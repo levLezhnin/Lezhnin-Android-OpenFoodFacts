@@ -104,6 +104,13 @@ fun ProfileScreen(viewModel: ProfileViewModel, onEdit: () -> Unit) {
                 style = MaterialTheme.typography.headlineSmall,
                 fontWeight = FontWeight.SemiBold
             )
+            if (profile.pairTime.isNotBlank()) {
+                Text(
+                    text = "Любимая пара: ${profile.pairTime}",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
             Card(
                 modifier = Modifier.fillMaxWidth(),
                 colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)

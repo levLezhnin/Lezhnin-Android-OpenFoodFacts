@@ -24,3 +24,4 @@ dependencyResolutionManagement {
 
 rootProject.name = "Android-Food-Facts"
 include(":app")
+include(":feature:profile")

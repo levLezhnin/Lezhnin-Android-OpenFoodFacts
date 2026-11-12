@@ -37,6 +37,7 @@ android {
 }
 
 dependencies {
+    implementation(project(":feature:profile"))
     implementation(libs.androidx.navigation.runtime.ktx)
     val composeBom = platform("androidx.compose:compose-bom:2024.09.00")
     implementation(composeBom)

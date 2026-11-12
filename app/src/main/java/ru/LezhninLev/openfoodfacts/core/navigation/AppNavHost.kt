@@ -7,8 +7,11 @@ import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import androidx.navigation.compose.navigation
+import androidx.navigation.NavBackStackEntry
 import androidx.navigation.navArgument
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.compose.runtime.remember
 import ru.LezhninLev.openfoodfacts.core.di.LocalAppContainer
 import ru.LezhninLev.openfoodfacts.feature.detail.DetailScreen
 import ru.LezhninLev.openfoodfacts.feature.detail.DetailViewModel
@@ -18,6 +21,9 @@ import ru.LezhninLev.openfoodfacts.feature.filter.FilterScreen
 import ru.LezhninLev.openfoodfacts.feature.filter.FilterViewModel
 import ru.LezhninLev.openfoodfacts.feature.list.ListScreen
 import ru.LezhninLev.openfoodfacts.feature.list.ListViewModel
+import ru.LezhninLev.openfoodfacts.feature.profile.ProfileEditScreen
+import ru.LezhninLev.openfoodfacts.feature.profile.ProfileScreen
+import ru.LezhninLev.openfoodfacts.feature.profile.ProfileViewModel
 
 @Composable
 fun AppNavHost(
@@ -106,5 +112,38 @@ fun AppNavHost(
                 viewModel = viewModel
             )
         }
+
+        navigation(
+            startDestination = Routes.PROFILE,
+            route = Routes.PROFILE_GRAPH
+        ) {
+            composable(Routes.PROFILE) { backStackEntry ->
+                val profileViewModel = profileViewModel(navController, backStackEntry)
+                ProfileScreen(
+                    viewModel = profileViewModel,
+                    onEdit = { navController.navigate(Routes.PROFILE_EDIT) }
+                )
+            }
+
+            composable(Routes.PROFILE_EDIT) { backStackEntry ->
+                val profileViewModel = profileViewModel(navController, backStackEntry)
+                ProfileEditScreen(
+                    viewModel = profileViewModel,
+                    onDone = { navController.popBackStack() },
+                    onBack = { navController.popBackStack() }
+                )
+            }
+        }
     }
+}
+
+@Composable
+private fun profileViewModel(
+    navController: NavHostController,
+    backStackEntry: NavBackStackEntry
+): ProfileViewModel {
+    val profileGraphEntry = remember(backStackEntry) {
+        navController.getBackStackEntry(Routes.PROFILE_GRAPH)
+    }
+    return viewModel(viewModelStoreOwner = profileGraphEntry)
 }

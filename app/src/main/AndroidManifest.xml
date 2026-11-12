@@ -14,10 +14,6 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.AndroidFoodFacts">
-        <receiver
-            android:name="ru.LezhninLev.openfoodfacts.feature.profile.PairAlarmReceiver"
-            android:exported="false" />
-
         <activity
             android:name="ru.LezhninLev.openfoodfacts.MainActivity"
             android:exported="true"
